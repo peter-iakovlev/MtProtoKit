@@ -1,6 +1,7 @@
 #import "MTInternalMessageParser.h"
 
 #import <MTProtoKit/MTBufferReader.h>
+#import <MTProtoKit/MTLogging.h>
 
 #import <MTProtoKit/MTResPqMessage.h>
 #import <MTProtoKit/MTRpcResultMessage.h>
