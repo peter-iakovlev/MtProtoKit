@@ -166,6 +166,7 @@
 		D0D225101B4D817B0085E26D /* MtProtoKitDynamic.h in Headers */ = {isa = PBXBuildFile; fileRef = D0D2250F1B4D817B0085E26D /* MtProtoKitDynamic.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D0D225161B4D817B0085E26D /* MtProtoKitDynamic.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0D2250B1B4D817B0085E26D /* MtProtoKitDynamic.framework */; };
 		D0D2251D1B4D817B0085E26D /* MtProtoKitDynamicTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D0D2251C1B4D817B0085E26D /* MtProtoKitDynamicTests.m */; };
+		EEE077E0E4734B82C34711C8 /* libPods-MtProtoKit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 38F96D181AF12CC8FE0258BA /* libPods-MtProtoKit.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -179,10 +180,13 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		38F96D181AF12CC8FE0258BA /* libPods-MtProtoKit.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-MtProtoKit.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		58258A411044E824D02FEE7F /* Pods-MtProtoKit.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MtProtoKit.release.xcconfig"; path = "Pods/Target Support Files/Pods-MtProtoKit/Pods-MtProtoKit.release.xcconfig"; sourceTree = "<group>"; };
 		93DBD22F18B2D72800631ADC /* MTRequestErrorContext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MTRequestErrorContext.h; path = MtProtoKit/MTRequestErrorContext.h; sourceTree = "<group>"; };
 		93DBD23018B2D72800631ADC /* MTRequestErrorContext.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MTRequestErrorContext.m; path = MtProtoKit/MTRequestErrorContext.m; sourceTree = "<group>"; };
 		93DBD23318B2D9AA00631ADC /* MTTime.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = MTTime.h; path = MtProtoKit/MTTime.h; sourceTree = "<group>"; };
 		93DBD23418B2DA1E00631ADC /* MTTime.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MTTime.m; path = MtProtoKit/MTTime.m; sourceTree = "<group>"; };
+		CA200CCCB6B3DB676BD09F6B /* Pods-MtProtoKit.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MtProtoKit.debug.xcconfig"; path = "Pods/Target Support Files/Pods-MtProtoKit/Pods-MtProtoKit.debug.xcconfig"; sourceTree = "<group>"; };
 		D0254C2C18B103D4009452AA /* aes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = aes.h; sourceTree = "<group>"; };
 		D0254C2D18B103D4009452AA /* asn1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = asn1.h; sourceTree = "<group>"; };
 		D0254C2E18B103D4009452AA /* asn1_mac.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = asn1_mac.h; sourceTree = "<group>"; };
@@ -464,6 +468,7 @@
 			files = (
 				D0580ABF1B0F3E7100E8235B /* SSignalKit.framework in Frameworks */,
 				D0CB066B1ADC48C4005E298F /* libcrypto.a in Frameworks */,
+				EEE077E0E4734B82C34711C8 /* libPods-MtProtoKit.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -604,6 +609,7 @@
 				D0D225191B4D817B0085E26D /* MtProtoKitDynamicTests */,
 				D05A831618AFB3F9007F1076 /* Frameworks */,
 				D05A831518AFB3F9007F1076 /* Products */,
+				DC516FB5350B3A0767218630 /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -629,6 +635,7 @@
 				D05A832B18AFB3F9007F1076 /* UIKit.framework */,
 				D05A834818AFB40C007F1076 /* Cocoa.framework */,
 				D05A834A18AFB40C007F1076 /* Other Frameworks */,
+				38F96D181AF12CC8FE0258BA /* libPods-MtProtoKit.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -1141,6 +1148,15 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
+		DC516FB5350B3A0767218630 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				CA200CCCB6B3DB676BD09F6B /* Pods-MtProtoKit.debug.xcconfig */,
+				58258A411044E824D02FEE7F /* Pods-MtProtoKit.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -1269,10 +1285,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = D0CB060E1ADC4483005E298F /* Build configuration list for PBXNativeTarget "MtProtoKit" */;
 			buildPhases = (
+				5C5721F9D50E7ED0CC92B2BC /* Check Pods Manifest.lock */,
 				D0CB05F21ADC4483005E298F /* Sources */,
 				D0CB05F31ADC4483005E298F /* Frameworks */,
 				D0CB05F41ADC4483005E298F /* Headers */,
 				D0CB05F51ADC4483005E298F /* Resources */,
+				02140A4364E60D80D4204384 /* Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -1325,7 +1343,7 @@
 		D05A830A18AFB3F9007F1076 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0510;
+				LastUpgradeCheck = 0640;
 				ORGANIZATIONNAME = Telegram;
 				TargetAttributes = {
 					D079AB961AF39B8000076F59 = {
@@ -1392,6 +1410,39 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		02140A4364E60D80D4204384 /* Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-MtProtoKit/Pods-MtProtoKit-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		5C5721F9D50E7ED0CC92B2BC /* Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		D079AB921AF39B8000076F59 /* Sources */ = {
@@ -1569,7 +1620,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
-				ONLY_ACTIVE_ARCH = NO;
+				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 			};
 			name = Debug;
@@ -1669,8 +1720,8 @@
 		};
 		D0CB060A1ADC4483005E298F /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = CA200CCCB6B3DB676BD09F6B /* Pods-MtProtoKit.debug.xcconfig */;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD)";
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
@@ -1681,10 +1732,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_BITCODE = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/Telegraph-dzhgyeoibunjpxfckifwvbawfdmi/Build/Products/Debug-iphoneos",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MtProtoKitiOS/MtProtoKit-Prefix.pch";
@@ -1694,7 +1742,6 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"$(PROJECT_DIR)/openssl",
 				);
 				INFOPLIST_FILE = MtProtoKit/Info.plist;
@@ -1707,7 +1754,7 @@
 				);
 				MACH_O_TYPE = staticlib;
 				MTL_ENABLE_DEBUG_INFO = YES;
-				OTHER_LDFLAGS = "-lz";
+				OTHER_LDFLAGS = "$(inherited)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1718,8 +1765,8 @@
 		};
 		D0CB060B1ADC4483005E298F /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 58258A411044E824D02FEE7F /* Pods-MtProtoKit.release.xcconfig */;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD)";
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
@@ -1731,16 +1778,12 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_BITCODE = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/Telegraph-dzhgyeoibunjpxfckifwvbawfdmi/Build/Products/Debug-iphoneos",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MtProtoKitiOS/MtProtoKit-Prefix.pch";
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"$(PROJECT_DIR)/openssl",
 				);
 				INFOPLIST_FILE = MtProtoKit/Info.plist;
@@ -1753,7 +1796,7 @@
 				);
 				MACH_O_TYPE = staticlib;
 				MTL_ENABLE_DEBUG_INFO = NO;
-				OTHER_LDFLAGS = "-lz";
+				OTHER_LDFLAGS = "$(inherited)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";

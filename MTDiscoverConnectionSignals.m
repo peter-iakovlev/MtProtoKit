@@ -5,6 +5,7 @@
 #import "MTTransportScheme.h"
 #import "MTTcpTransport.h"
 #import "MTHttpTransport.h"
+#import <MTProtoKit/MTLogging.h>
 
 #import <netinet/in.h>
 #import <arpa/inet.h>
