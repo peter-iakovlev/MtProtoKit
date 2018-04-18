@@ -28,6 +28,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#ifndef __AFHTTPREQUESTOPERATION_H_
+#define __AFHTTPREQUESTOPERATION_H_
+
 #import <Foundation/Foundation.h>
 
 #if defined(MtProtoKitDynamicFramework)
@@ -119,3 +122,5 @@
                               failure:(void (^)(NSOperation *operation, NSError *error))failure;
 
 @end
+
+#endif

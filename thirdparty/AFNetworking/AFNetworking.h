@@ -34,8 +34,6 @@
 #ifndef _AFNETWORKING_
 #define _AFNETWORKING_
 
-#import "AFURLConnectionOperation.h"
-
 #import "AFHTTPRequestOperation.h"
 #import "AFHTTPClient.h"
 
