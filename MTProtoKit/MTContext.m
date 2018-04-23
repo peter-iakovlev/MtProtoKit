@@ -207,37 +207,45 @@
     NSDictionary *fetchPublicKeysActions = _fetchPublicKeysActions;
     _fetchPublicKeysActions = nil;
     
-    [[MTContext contextQueue] dispatchOnQueue:^
-    {
-        for (NSNumber *nDatacenterId in discoverDatacenterAddressActions)
-        {
-            MTDiscoverDatacenterAddressAction *action = discoverDatacenterAddressActions[nDatacenterId];
-            action.delegate = nil;
-            [action cancel];
-        }
-
-        for (NSNumber *nDatacenterId in datacenterAuthActions)
-        {
-            MTDatacenterAuthAction *action = datacenterAuthActions[nDatacenterId];
-            action.delegate = nil;
-            [action cancel];
-        }
-        
-        for (NSNumber *nDatacenterId in datacenterTransferAuthActions)
-        {
-            MTDatacenterTransferAuthAction *action = datacenterTransferAuthActions[nDatacenterId];
-            action.delegate = nil;
-            [action cancel];
-        }
-        
-        for (NSNumber *nDatacenterId in fetchPublicKeysActions)
-        {
-            id<MTDisposable> disposable = fetchPublicKeysActions[nDatacenterId];
-            [disposable dispose];
-        }
-        
-        [_cleanupSessionInfoDisposables dispose];
-    }];
+    id<MTDisposable> cleanupSessionInfoDisposables = _cleanupSessionInfoDisposables;
+    
+    [[MTContext contextQueue] dispatchOnQueue:^{
+         for (NSNumber *nDatacenterId in discoverDatacenterAddressActions)
+         {
+             MTDiscoverDatacenterAddressAction *action = discoverDatacenterAddressActions[nDatacenterId];
+             action.delegate = nil;
+             [action cancel];
+         }
+         
+         for (NSNumber *nDatacenterId in datacenterAuthActions)
+         {
+             MTDatacenterAuthAction *action = datacenterAuthActions[nDatacenterId];
+             action.delegate = nil;
+             [action cancel];
+         }
+         
+         for (NSNumber *nDatacenterId in datacenterTempAuthActions)
+         {
+             MTDatacenterAuthAction *action = datacenterTempAuthActions[nDatacenterId];
+             action.delegate = nil;
+             [action cancel];
+         }
+         
+         for (NSNumber *nDatacenterId in datacenterTransferAuthActions)
+         {
+             MTDatacenterTransferAuthAction *action = datacenterTransferAuthActions[nDatacenterId];
+             action.delegate = nil;
+             [action cancel];
+         }
+         
+         for (NSNumber *nDatacenterId in fetchPublicKeysActions)
+         {
+             id<MTDisposable> disposable = fetchPublicKeysActions[nDatacenterId];
+             [disposable dispose];
+         }
+         
+         [cleanupSessionInfoDisposables dispose];
+     }];
 }
 
 - (void)performBatchUpdates:(void (^)())block
