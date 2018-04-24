@@ -24,6 +24,19 @@
 #import "MTDatacenterAddress.h"
 
 #import "MTAes.h"
+#import "MTEncryption.h"
+
+#import "MTDNS.h"
+
+#if defined(MtProtoKitDynamicFramework)
+#   import <MTProtoKitDynamic/MTSignal.h>
+#elif defined(MtProtoKitMacFramework)
+#   import <MTProtoKitMac/MTSignal.h>
+#else
+#   import <MTProtoKit/MTSignal.h>
+#endif
+
+#define MT_TCPO25 1
 
 MTInternalIdClass(MTTcpConnection)
 
@@ -103,9 +116,11 @@ struct ctr_state {
 
 
 @interface MTTcpConnection () <GCDAsyncSocketDelegate>
-{   
+{
     GCDAsyncSocket *_socket;
     bool _closed;
+    
+    int32_t _datacenterTag;
     
     uint8_t _quickAckByte;
     
@@ -130,6 +145,12 @@ struct ctr_state {
     int32_t _socksPort;
     NSString *_socksUsername;
     NSString *_socksPassword;
+    
+    NSString *_mtpIp;
+    int32_t _mtpPort;
+    NSData *_mtpSecret;
+    
+    MTMetaDisposable *_resolveDisposable;
 }
 
 @property (nonatomic) int64_t packetHeadDecodeToken;
@@ -171,10 +192,24 @@ struct ctr_state {
         }
         
         if (context.apiEnvironment.socksProxySettings != nil) {
-            _socksIp = context.apiEnvironment.socksProxySettings.ip;
-            _socksPort = context.apiEnvironment.socksProxySettings.port;
-            _socksUsername = context.apiEnvironment.socksProxySettings.username;
-            _socksPassword = context.apiEnvironment.socksProxySettings.password;
+            if (context.apiEnvironment.socksProxySettings.secret != nil) {
+                _mtpIp = context.apiEnvironment.socksProxySettings.ip;
+                _mtpPort = context.apiEnvironment.socksProxySettings.port;
+                _mtpSecret = context.apiEnvironment.socksProxySettings.secret;
+            } else {
+                _socksIp = context.apiEnvironment.socksProxySettings.ip;
+                _socksPort = context.apiEnvironment.socksProxySettings.port;
+                _socksUsername = context.apiEnvironment.socksProxySettings.username;
+                _socksPassword = context.apiEnvironment.socksProxySettings.password;
+            }
+        }
+        
+        _resolveDisposable = [[MTMetaDisposable alloc] init];
+        
+        if (address.preferForMedia) {
+            _datacenterTag = -(int32_t)datacenterId;
+        } else {
+            _datacenterTag = (int32_t)datacenterId;
         }
     }
     return self;
@@ -188,11 +223,14 @@ struct ctr_state {
     
     MTTimer *responseTimeoutTimer = _responseTimeoutTimer;
     
+    MTMetaDisposable *resolveDisposable = _resolveDisposable;
+    
     [[MTTcpConnection tcpQueue] dispatchOnQueue:^
     {
         [responseTimeoutTimer invalidate];
         
         [socket disconnect];
+        [resolveDisposable dispose];
     }];
 }
 
@@ -228,37 +266,83 @@ struct ctr_state {
                     } else {
                         MTLog(@"[MTTcpConnection#%x connecting to %@:%d via %@:%d using %@:%@]", (int)self, _address.ip, (int)_address.port, _socksIp, (int)_socksPort, _socksUsername, _socksPassword);
                     }
+                } else if (_mtpIp != nil) {
+                    MTLog(@"[MTTcpConnection#%x connecting to %@:%d via mtp://%@:%d:%@]", (int)self, _address.ip, (int)_address.port, _mtpIp, (int)_mtpPort, _mtpSecret);
                 } else {
                     MTLog(@"[MTTcpConnection#%x connecting to %@:%d]", (int)self, _address.ip, (int)_address.port);
                 }
             }
             
-            NSString *ip = _address.ip;
+            MTSignal *resolveSignal = [MTSignal single:_address.ip];
             uint16_t port = _address.port;
             
             if (_socksIp != nil) {
-                ip = _socksIp;
                 port = _socksPort;
+                
+                bool isHostname = true;
+                struct in_addr ip4;
+                struct in6_addr ip6;
+                if (inet_aton(_socksIp.UTF8String, &ip4) != 0) {
+                    isHostname = false;
+                } else if (inet_pton(AF_INET6, _socksIp.UTF8String, &ip6) != 0) {
+                    isHostname = false;
+                }
+                
+                if (isHostname) {
+                    resolveSignal = [MTDNS resolveHostname:_socksIp];
+                } else {
+                    resolveSignal = [MTSignal single:_socksIp];
+                }
+            } else if (_mtpIp != nil) {
+                port = _mtpPort;
+                
+                bool isHostname = true;
+                struct in_addr ip4;
+                struct in6_addr ip6;
+                if (inet_aton(_mtpIp.UTF8String, &ip4) != 0) {
+                    isHostname = false;
+                } else if (inet_pton(AF_INET6, _mtpIp.UTF8String, &ip6) != 0) {
+                    isHostname = false;
+                }
+                
+                if (isHostname) {
+                    resolveSignal = [MTDNS resolveHostname:_mtpIp];
+                } else {
+                    resolveSignal = [MTSignal single:_mtpIp];
+                }
             }
             
-            __autoreleasing NSError *error = nil;
-            if (![_socket connectToHost:ip onPort:port viaInterface:_interface withTimeout:12 error:&error] || error != nil) {
-                [self closeAndNotify];
-            } else if (_socksIp == nil) {
-                [_socket readDataToLength:1 withTimeout:-1 tag:MTTcpReadTagPacketShortLength];
-            } else {
-                struct socks5_ident_req req;
-                req.Version = 5;
-                req.NumberOfMethods = 1;
-                req.Methods[0] = 0x00;
-                
-                if (_socksUsername != nil) {
-                    req.NumberOfMethods += 1;
-                    req.Methods[1] = 0x02;
-                }
-                [_socket writeData:[NSData dataWithBytes:&req length:2 + req.NumberOfMethods] withTimeout:-1 tag:0];
-                [_socket readDataToLength:sizeof(struct socks5_ident_resp) withTimeout:-1 tag:MTTcpSocksLogin];
-            }
+            __weak MTTcpConnection *weakSelf = self;
+            [_resolveDisposable setDisposable:[resolveSignal startWithNext:^(NSString *ip) {
+                [[MTTcpConnection tcpQueue] dispatchOnQueue:^{
+                    __strong MTTcpConnection *strongSelf = weakSelf;
+                    if (strongSelf == nil || ip == nil) {
+                        return;
+                    }
+                    if (![ip respondsToSelector:@selector(characterAtIndex:)]) {
+                        return;
+                    }
+                    
+                    __autoreleasing NSError *error = nil;
+                    if (![strongSelf->_socket connectToHost:ip onPort:port viaInterface:strongSelf->_interface withTimeout:12 error:&error] || error != nil) {
+                        [strongSelf closeAndNotify];
+                    } else if (strongSelf->_socksIp == nil) {
+                        [strongSelf->_socket readDataToLength:1 withTimeout:-1 tag:MTTcpReadTagPacketShortLength];
+                    } else {
+                        struct socks5_ident_req req;
+                        req.Version = 5;
+                        req.NumberOfMethods = 1;
+                        req.Methods[0] = 0x00;
+                        
+                        if (_socksUsername != nil) {
+                            req.NumberOfMethods += 1;
+                            req.Methods[1] = 0x02;
+                        }
+                        [strongSelf->_socket writeData:[NSData dataWithBytes:&req length:2 + req.NumberOfMethods] withTimeout:-1 tag:0];
+                        [strongSelf->_socket readDataToLength:sizeof(struct socks5_ident_resp) withTimeout:-1 tag:MTTcpSocksLogin];
+                    }
+                }];
+            }]];
         }
     }];
 }
@@ -351,14 +435,45 @@ struct ctr_state {
                         if (useEncryption) {
                             int32_t controlVersion = 0xefefefef;
                             memcpy(controlBytes + 56, &controlVersion, 4);
+                            int32_t datacenterTag = _datacenterTag;
+                            memcpy(controlBytes + 60, &datacenterTag, 4);
                             
                             uint8_t controlBytesReversed[64];
                             for (int i = 0; i < 64; i++) {
                                 controlBytesReversed[i] = controlBytes[64 - 1 - i];
                             }
                             
-                            _outgoingAesCtr = [[MTAesCtr alloc] initWithKey:controlBytes + 8 keyLength:32 iv:controlBytes + 8 + 32 decrypt:false];
-                            _incomingAesCtr = [[MTAesCtr alloc] initWithKey:controlBytesReversed + 8 keyLength:32 iv:controlBytesReversed + 8 + 32 decrypt:false];
+                            NSData *aesKey = [[NSData alloc] initWithBytes:controlBytes + 8 length:32];
+                            NSData *aesIv = [[NSData alloc] initWithBytes:controlBytes + 8 + 32 length:16];
+                            
+                            NSData *incomingAesKey = [[NSData alloc] initWithBytes:controlBytesReversed + 8 length:32];
+                            NSData *incomingAesIv = [[NSData alloc] initWithBytes:controlBytesReversed + 8 + 32 length:16];
+#if MT_TCPO25
+                            if (_mtpSecret != nil || _address.secret != nil) {
+                                NSMutableData *aesKeyData = [[NSMutableData alloc] init];
+                                [aesKeyData appendData:aesKey];
+                                if (_mtpSecret != nil) {
+                                    [aesKeyData appendData:_mtpSecret];
+                                } else if (_address.secret != nil) {
+                                    [aesKeyData appendData:_address.secret];
+                                }
+                                NSData *aesKeyHash = MTSha256(aesKeyData);
+                                aesKey = [aesKeyHash subdataWithRange:NSMakeRange(0, 32)];
+                                
+                                NSMutableData *incomingAesKeyData = [[NSMutableData alloc] init];
+                                [incomingAesKeyData appendData:incomingAesKey];
+                                if (_mtpSecret != nil) {
+                                    [incomingAesKeyData appendData:_mtpSecret];
+                                } else if (_address.secret != nil) {
+                                    [incomingAesKeyData appendData:_address.secret];
+                                }
+                                NSData *incomingAesKeyHash = MTSha256(incomingAesKeyData);
+                                incomingAesKey = [incomingAesKeyHash subdataWithRange:NSMakeRange(0, 32)];
+                            }
+#endif
+                            
+                            _outgoingAesCtr = [[MTAesCtr alloc] initWithKey:aesKey.bytes keyLength:32 iv:aesIv.bytes decrypt:false];
+                            _incomingAesCtr = [[MTAesCtr alloc] initWithKey:incomingAesKey.bytes keyLength:32 iv:incomingAesIv.bytes decrypt:false];
                             
                             uint8_t encryptedControlBytes[64];
                             [_outgoingAesCtr encryptIn:controlBytes out:encryptedControlBytes len:64];
@@ -576,7 +691,7 @@ struct ctr_state {
         
         if (resp.Reply != 0x00) {
             if (MTLogEnabled()) {
-                MTLog(@"***** %s: socks5 connect failed, error 0x%02x", __PRETTY_FUNCTION__, resp.Reply);
+                MTLog(@"***** %x %s: socks5 connect failed, error 0x%02x", (int)self, __PRETTY_FUNCTION__, resp.Reply);
             }
             [self closeAndNotify];
             return;
@@ -800,7 +915,7 @@ struct ctr_state {
         [_socket readDataToLength:1 withTimeout:-1 tag:MTTcpReadTagPacketShortLength];
     }
 }
-             
+
 - (void)socket:(GCDAsyncSocket *)__unused socket didConnectToHost:(NSString *)__unused host port:(uint16_t)__unused port
 {
     if (_socksIp != nil) {

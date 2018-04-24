@@ -13,7 +13,7 @@
 
 @implementation MTDatacenterAddress
 
-- (instancetype)initWithIp:(NSString *)ip port:(uint16_t)port preferForMedia:(bool)preferForMedia restrictToTcp:(bool)restrictToTcp cdn:(bool)cdn preferForProxy:(bool)preferForProxy
+- (instancetype)initWithIp:(NSString *)ip port:(uint16_t)port preferForMedia:(bool)preferForMedia restrictToTcp:(bool)restrictToTcp cdn:(bool)cdn preferForProxy:(bool)preferForProxy secret:(NSData *)secret
 {
     self = [super init];
     if (self != nil)
@@ -24,6 +24,7 @@
         _restrictToTcp = restrictToTcp;
         _cdn = cdn;
         _preferForProxy = preferForProxy;
+        _secret = secret;
     }
     return self;
 }
@@ -40,6 +41,7 @@
         _restrictToTcp = [aDecoder decodeBoolForKey:@"restrictToTcp"];
         _cdn = [aDecoder decodeBoolForKey:@"cdn"];
         _preferForProxy = [aDecoder decodeBoolForKey:@"preferForProxy"];
+        _secret = [aDecoder decodeObjectForKey:@"secret"];
     }
     return self;
 }
@@ -53,6 +55,7 @@
     [aCoder encodeBool:_restrictToTcp forKey:@"restrictToTcp"];
     [aCoder encodeBool:_cdn forKey:@"cdn"];
     [aCoder encodeBool:_preferForProxy forKey:@"preferForProxy"];
+    [aCoder encodeObject:_secret forKey:@"secret"];
 }
 
 - (BOOL)isEqual:(id)object
@@ -86,6 +89,14 @@
     }
     
     if (_preferForProxy != other.preferForProxy) {
+        return false;
+    }
+    
+    if ((_secret != nil) && (other->_secret != nil)) {
+        if (![_secret isEqualToData:other->_secret]) {
+            return false;
+        }
+    } else if ((_secret != nil) != (other->_secret != nil)) {
         return false;
     }
     

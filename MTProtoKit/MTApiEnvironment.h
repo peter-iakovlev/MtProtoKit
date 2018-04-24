@@ -14,8 +14,9 @@
 @property (nonatomic, readonly) uint16_t port;
 @property (nonatomic, strong, readonly) NSString *username;
 @property (nonatomic, strong, readonly) NSString *password;
+@property (nonatomic, strong, readonly) NSData *secret;
 
-- (instancetype)initWithIp:(NSString *)ip port:(uint16_t)port username:(NSString *)username password:(NSString *)password;
+- (instancetype)initWithIp:(NSString *)ip port:(uint16_t)port username:(NSString *)username password:(NSString *)password secret:(NSData *)secret;
 
 @end
 
@@ -27,7 +28,7 @@
 @property (nonatomic, strong) NSString *appVersion;
 @property (nonatomic, strong, readonly) NSString *systemLangCode;
 @property (nonatomic, strong) NSNumber *layer;
-    
+
 @property (nonatomic, strong) NSString *langPack;
 @property (nonatomic, strong, readonly) NSString *langPackCode;
 
